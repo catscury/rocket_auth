@@ -90,9 +90,30 @@ impl Debug for User {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "User {{ id: {:?}, email: {:?}, is_admin: {:?}, password: \"*****\" }}",
-            self.id, self.email, self.is_admin
+            "User {{ id: {:?}, email: {:?}, is_admin: {:?}, is_weak: {:?}, password: \"*****\" }}",
+            self.id, self.email, self.is_admin, self.is_confirmed
         )
+    }
+}
+
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for WeakUser {
+    type Error = Error;
+    async fn from_request(request: &'r Request<'_>) -> Outcome<WeakUser, Error> {
+        use rocket::outcome::Outcome::*;
+        let guard = request.guard().await;
+        let auth: Auth = match guard {
+            Success(auth) => auth,
+            Failure(x) => return Failure(x),
+            Forward(x) => return Forward(x),
+        };
+        if let Some(user) = auth.get_user().await {
+            if !user.is_confirmed {
+                return Outcome::Success(WeakUser(user))
+            }
+        }
+        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
     }
 }
 
@@ -108,10 +129,11 @@ impl<'r> FromRequest<'r> for User {
             Forward(x) => return Forward(x),
         };
         if let Some(user) = auth.get_user().await {
-            Outcome::Success(user)
-        } else {
-            Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+            if user.is_confirmed {
+                return Outcome::Success(user)
+            }
         }
+        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
     }
 }
 
@@ -147,11 +169,36 @@ impl DerefMut for AdminUser {
         &mut self.0
     }
 }
+
+impl Deref for WeakUser {
+    type Target = User;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for WeakUser {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+
 impl std::convert::TryFrom<User> for AdminUser {
     type Error = Error;
     fn try_from(value: User) -> Result<Self> {
         if value.is_admin {
             Ok(AdminUser(value))
+        } else {
+            Err(Error::UnauthorizedError)
+        }
+    }
+}
+
+impl std::convert::TryFrom<User> for WeakUser {
+    type Error = Error;
+    fn try_from(value: User) -> Result<Self> {
+        if !value.is_confirmed {
+            Ok(WeakUser(value))
         } else {
             Err(Error::UnauthorizedError)
         }

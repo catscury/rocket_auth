@@ -171,6 +171,7 @@ pub use error::Error;
 pub struct User {
     id: i32,
     email: String,
+    is_confirmed : bool,
     pub is_admin: bool,
     #[serde(skip_serializing)]
     password: String,
@@ -189,9 +190,18 @@ pub struct User {
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
 pub struct AdminUser(User);
 
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
+pub struct WeakUser(User);
+
 impl Debug for AdminUser {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Admin{:?}", self.0)
+    }
+}
+
+impl Debug for WeakUser {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "WeakUser{:?}", self.0)
     }
 }
 

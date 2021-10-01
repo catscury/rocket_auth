@@ -21,6 +21,7 @@ impl<'a> TryFrom<&rusqlite::Row<'a>> for crate::User {
             email: row.get(1)?,
             password: row.get(2)?,
             is_admin: row.get(3)?,
+            is_confirmed: row.get(4)?,
         })
     }
 }
@@ -34,9 +35,10 @@ impl DBConnection for Mutex<rusqlite::Connection> {
         Ok(())
     }
 
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str,
+                         is_admin: bool, is_confirmed: bool) -> Result<()> {
         let conn = self.lock().await;
-        conn.execute(INSERT_USER, params![email, hash, is_admin])?;
+        conn.execute(INSERT_USER, params![email, hash, is_admin, is_confirmed])?;
         Ok(())
     }
 
@@ -44,7 +46,8 @@ impl DBConnection for Mutex<rusqlite::Connection> {
         let conn = self.lock().await;
         conn.execute(
             UPDATE_USER,
-            params![user.id, user.email, user.password, user.is_admin],
+            params![user.id, user.email, user.password,
+                    user.is_admin, user.is_confirmed],
         )?;
         Ok(())
     }
@@ -93,12 +96,14 @@ impl DBConnection for Mutex<SqliteConnection> {
         println!("table created");
         Ok(())
     }
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str,
+                         is_admin: bool, is_confirmed: bool) -> Result<()> {
         let mut db = self.lock().await;
         query(INSERT_USER)
             .bind(email)
             .bind(hash)
             .bind(is_admin)
+            .bind(is_confirmed)
             .execute(&mut *db)
             .await?;
         Ok(())
@@ -110,6 +115,7 @@ impl DBConnection for Mutex<SqliteConnection> {
             .bind(&user.email)
             .bind(&user.password)
             .bind(user.is_admin)
+            .bind(user.is_confirmed)
             .execute(&mut *db)
             .await?;
         Ok(())
@@ -156,11 +162,13 @@ impl DBConnection for SqlitePool {
             .await?;
         Ok(())
     }
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str,
+                         is_admin: bool, is_confirmed: bool) -> Result<()> {
         query(INSERT_USER)
             .bind(email)
             .bind(hash)
             .bind(is_admin)
+            .bind(is_confirmed)
             .execute(self)
             .await?;
         Ok(())
@@ -171,6 +179,7 @@ impl DBConnection for SqlitePool {
             .bind(&user.email)
             .bind(&user.password)
             .bind(user.is_admin)
+            .bind(user.is_confirmed)
             .execute(self)
             .await?;
         Ok(())

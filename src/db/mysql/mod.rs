@@ -12,11 +12,13 @@ impl DBConnection for MySqlPool {
         query(CREATE_TABLE).execute(self).await?;
         Ok(())
     }
-    async fn create_user(&self, email: &str, hash: &str, is_admin: bool) -> Result<()> {
+    async fn create_user(&self, email: &str, hash: &str,
+                         is_admin: bool, is_confirmed: bool) -> Result<()> {
         query(INSERT_USER)
             .bind(email)
             .bind(hash)
             .bind(is_admin)
+            .bind(is_confirmed)
             .execute(self)
             .await?;
         Ok(())
@@ -26,6 +28,7 @@ impl DBConnection for MySqlPool {
             .bind(&user.email)
             .bind(&user.password)
             .bind(user.is_admin)
+            .bind(user.is_confirmed)
             .bind(user.id)
             .execute(self)
             .await?;
