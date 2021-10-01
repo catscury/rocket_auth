@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY,
     email TEXT UNIQUE,
     password TEXT NOT NULL,
-    is_admin BOOL DEFAULT 0
+    is_admin BOOL DEFAULT 0,
     is_confirmed BOOL DEFAULT 0
     -- failed_login_attempts INTEGER DEFAULT 0
 
@@ -14,7 +14,7 @@ INSERT INTO users (email, password, is_admin, is_confirmed) VALUES (?1, ?2, ?3, 
 ";
 
 pub(crate) const UPDATE_USER: &str = "
-UPDATE table SET 
+UPDATE users SET
     email = ?2,
     password = ?3,
     is_admin = ?4,
