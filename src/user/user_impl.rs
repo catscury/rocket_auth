@@ -113,7 +113,7 @@ impl<'r> FromRequest<'r> for WeakUser {
                 return Outcome::Success(WeakUser(user))
             }
         }
-        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+        Outcome::Forward(())
     }
 }
 
@@ -133,7 +133,7 @@ impl<'r> FromRequest<'r> for User {
                 return Outcome::Success(user)
             }
         }
-        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+        Outcome::Forward(())
     }
 }
 
@@ -153,7 +153,7 @@ impl<'r> FromRequest<'r> for AdminUser {
                 return Outcome::Success(AdminUser(user));
             }
         }
-        Outcome::Failure((Status::Unauthorized, Error::UnauthorizedError))
+        Outcome::Forward(())
     }
 }
 
