@@ -82,6 +82,10 @@ impl User {
             throw!(Error::InvalidEmailAddressError)
         }
     }
+
+    pub fn set_confirm_status(&mut self, status: bool) {
+        self.is_confirmed = status;
+    }
 }
 
 use std::fmt::{self, Debug};
