@@ -65,7 +65,7 @@ impl Users {
         form.validate()?;
         let email = &form.email;
         let password = &form.password;
-        let result = self.create_user(email, password, false).await;
+        let result = self.create_user(email, password, false, false).await;
         match result {
             Ok(_) => (),
             #[cfg(feature="sqlx")]
