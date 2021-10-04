@@ -101,6 +101,20 @@ impl<'a> Auth<'a> {
         self.cookies.add_private(Cookie::new("rocket_auth", to_str));
     }
 
+    #[throws(Error)]
+    pub async fn login_external(&self, email: &String) {
+        let key = self.users.login_external(email).await?;
+        let user = self.users.get_by_email(&email).await?;
+        let session = Session {
+            id: user.id,
+            email: user.email,
+            auth_key: key,
+            time_stamp: now(),
+        };
+        let to_str = format!("{}", json!(session));
+        self.cookies.add_private(Cookie::new("rocket_auth", to_str));
+    }
+
     /// Logs a user in for the specified period of time.
     /// ```rust
     /// # use rocket::{post, form::Form};

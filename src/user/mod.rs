@@ -39,6 +39,17 @@ impl Users {
             throw!(Error::UnauthorizedError)
         }
     }
+
+    #[throws(Error)]
+    async fn login_external(&self, email: &String) -> String {
+        let user = self
+            .conn
+            .get_user_by_email(&email)
+            .await
+            .map_err(|_| Error::EmailDoesNotExist(email.clone()))?;
+        self.set_auth_key(user.id)?
+    }
+
     #[throws(Error)]
     fn logout(&self, session: &Session) {
         if self.is_auth(session) {
