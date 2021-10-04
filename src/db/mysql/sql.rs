@@ -17,7 +17,7 @@ UPDATE table SET
     email = ?,
     password = ?,
     is_admin = ?,
-    is_confirmed = ?,
+    is_confirmed = ?
 WHERE
     id = ?
 ";

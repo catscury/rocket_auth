@@ -18,7 +18,7 @@ UPDATE users SET
     email = ?2,
     password = ?3,
     is_admin = ?4,
-    is_confirmed = ?5,
+    is_confirmed = ?5
 WHERE
     id = ?1;
 ";
