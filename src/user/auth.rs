@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use rocket::http::Status;
-use rocket::http::{Cookie, CookieJar};
+use rocket::http::{Cookie, CookieJar, SameSite};
 use rocket::request::FromRequest;
 use rocket::request::Outcome;
 use rocket::Request;
@@ -112,7 +112,9 @@ impl<'a> Auth<'a> {
             time_stamp: now(),
         };
         let to_str = format!("{}", json!(session));
-        self.cookies.add_private(Cookie::new("rocket_auth", to_str));
+        self.cookies.add_private(Cookie::build("rocket_auth", to_str)
+                                 .same_site(SameSite::Lax)
+                                 .finish());
     }
 
     /// Logs a user in for the specified period of time.
