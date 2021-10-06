@@ -160,6 +160,11 @@ impl<'a> Auth<'a> {
         self.users.signup(form).await?;
     }
 
+    #[throws(Error)]
+    pub async fn signup_external(&self, email: &String) {
+        self.users.signup_external(email).await?;
+    }
+
     /// Creates a new user from a form or a json.
     /// The session will last the specified period of time.
     /// ```rust
